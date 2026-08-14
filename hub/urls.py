@@ -5,5 +5,6 @@ app_name = "hub"
 
 urlpatterns = [
     path("", views.post_list, name="post_list"),
+    path("posts/new/", views.post_create, name="post_create"),
     path("posts/<slug:slug>/", views.post_detail, name="post_detail"),
 ]
