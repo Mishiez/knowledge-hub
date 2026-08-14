@@ -19,14 +19,16 @@ def post_create(request):
         title = request.POST.get("title", "").strip()
         slug = request.POST.get("slug", "").strip()
         content = request.POST.get("content", "").strip()
+        author_id = request.POST.get("author")
 
-        if title and slug and content:
+        if title and slug and content and author_id:
             Post.objects.create(
-                author=request.user if request.user.is_authenticated else User.objects.first(),
+                author_id=author_id,
                 title=title,
                 slug=slug,
                 content=content,
             )
             return redirect("hub:post_detail", slug=slug)
 
-    return render(request, "hub/post_form.html")
+    users = User.objects.all()
+    return render(request, "hub/post_form.html", {"users": users})
