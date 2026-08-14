@@ -4,6 +4,7 @@
     <title>{{ post.title }}</title>
 </head>
 <body>
+    <p><a href="{% url 'hub:post_list' %}">← All Posts</a></p>
     <h1>{{ post.title }}</h1>
     <p><em>by {{ post.author }} — {{ post.created_at }}</em></p>
     <p>{{ post.content }}</p>

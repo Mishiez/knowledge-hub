@@ -5,6 +5,7 @@
 </head>
 <body>
     <h1>All Posts</h1>
+    <p><a href="{% url 'hub:post_create' %}">+ New Post</a></p>
     <ul>
         {% for post in posts %}
             <li>
