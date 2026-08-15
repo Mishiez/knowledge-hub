@@ -46,3 +46,27 @@ class PostDetailViewTests(TestCase):
     def test_post_detail_invalid_slug_returns_404(self):
         response = self.client.get("/posts/does-not-exist/")
         self.assertEqual(response.status_code, 404)
+
+
+class PostCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="creator", password="testpass123"
+        )
+
+    def test_post_create_valid_post_redirects_and_saves(self):
+        response = self.client.post(
+            "/posts/new/",
+            {
+                "title": "Created Via Test",
+                "slug": "created-via-test",
+                "content": "Some content written in a test.",
+                "author": self.user.id,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, "/posts/created-via-test/")
+
+        post = Post.objects.get(slug="created-via-test")
+        self.assertEqual(post.title, "Created Via Test")
+        self.assertEqual(post.author_id, self.user.id)
