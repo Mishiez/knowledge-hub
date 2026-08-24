@@ -5,7 +5,7 @@ from .models import Post
 
 
 def post_list(request):
-    posts = Post.objects.all()
+    posts = Post.objects.select_related("author")
     return render(request, "hub/post_list.html", {"posts": posts})
 
 
