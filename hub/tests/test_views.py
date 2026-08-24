@@ -70,3 +70,20 @@ class PostCreateViewTests(TestCase):
         post = Post.objects.get(slug="created-via-test")
         self.assertEqual(post.title, "Created Via Test")
         self.assertEqual(post.author_id, self.user.id)
+
+
+class PostListNPlusOneTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="author1", password="pass123")
+        self.user2 = User.objects.create_user(username="author2", password="pass123")
+        Post.objects.create(author=self.user1, title="Post One", slug="post-one", content="Content one")
+        Post.objects.create(author=self.user2, title="Post Two", slug="post-two", content="Content two")
+
+    def test_post_list_uses_bounded_query_count(self):
+        with self.assertNumQueries(1):
+            response = self.client.get("/")
+            list(response.context["posts"])
+            for post in response.context["posts"]:
+                _ = post.author.username
+
+        self.assertEqual(response.status_code, 200)
