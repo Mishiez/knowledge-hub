@@ -87,3 +87,22 @@ class PostListNPlusOneTests(TestCase):
                 _ = post.author.username
 
         self.assertEqual(response.status_code, 200)
+
+class PostDetailNPlusOneTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="detailauthor1", password="pass123")
+        self.user2 = User.objects.create_user(username="detailauthor2", password="pass123")
+        self.post = Post.objects.create(
+            author=self.user1, title="NPlusOne Post", slug="nplusone-post", content="Content"
+        )
+        Comment.objects.create(post=self.post, author=self.user1, body="First comment")
+        Comment.objects.create(post=self.post, author=self.user2, body="Second comment")
+
+    def test_post_detail_uses_bounded_query_count(self):
+        with self.assertNumQueries(2):
+            response = self.client.get(f"/posts/{self.post.slug}/")
+            list(response.context["comments"])
+            for comment in response.context["comments"]:
+                _ = comment.author.username
+
+        self.assertEqual(response.status_code, 200)
