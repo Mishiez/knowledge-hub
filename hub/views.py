@@ -10,8 +10,8 @@ def post_list(request):
 
 
 def post_detail(request, slug):
-    post = get_object_or_404(Post, slug=slug)
-    comments = post.comments.all()
+    post = get_object_or_404(Post.objects.select_related("author"), slug=slug)
+    comments = post.comments.select_related("author")
     return render(request, "hub/post_detail.html", {"post": post, "comments": comments})
 
 
