@@ -15,8 +15,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--count",
             type=int,
-            default=50000,
-            help="Number of posts to generate (default: 50000).",
+            default=30,
+            help="Number of posts to generate (default: 30).",
         )
 
     def handle(self, *args, **options):
