@@ -21,8 +21,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
+    author = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Post
         fields = ["id", "title", "slug", "content", "author", "created_at"]
+        read_only_fields = ["id", "created_at"]
