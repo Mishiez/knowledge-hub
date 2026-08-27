@@ -106,6 +106,29 @@ knowledgehub/
     │   └── test_constraints.py
     └── templates/hub/
 ```
+## API (Django REST Framework)
+
+Base URL: `http://127.0.0.1:8000/api/`
+
+### Authentication (token-based)
+- `POST /api/auth/register/` — `{username, email, password}` → 201, returns `{user, token}`
+- `POST /api/auth/login/` — `{username, password}` → 200, returns `{user, token}`
+- `POST /api/auth/logout/` — requires token → 204
+- `GET /api/auth/me/` — requires token → 200, current user
+
+Authenticated requests need header: `Authorization: Token <token>`
+
+### Posts
+- `GET /api/posts/` — public, paginated (`{count, next, previous, results}`), supports `?search=` (title) and `?author__username=`
+- `POST /api/posts/` — requires token
+- `GET /api/posts/<slug>/` — public
+- `PATCH`/`DELETE /api/posts/<slug>/` — requires token + ownership
+
+### Comments
+- `GET`/`POST /api/posts/<post_id>/comments/` — GET public, POST requires token
+- `DELETE /api/comments/<id>/` — requires token + ownership
+
+Non-owners attempting to modify/delete another user's post or comment receive `403 Forbidden`.
 
 ## Notes
 
