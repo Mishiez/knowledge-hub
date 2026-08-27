@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsOwnerOrReadOnly
-from .api_views import PostListView, PostDetailView
+from .api_views import PostListView, PostDetailView, CommentListCreateView, CommentDeleteView
 
 class PostListCreateView(ListCreateAPIView):
     queryset = Post.objects.select_related("author")
@@ -31,4 +31,6 @@ urlpatterns = [
     path("auth/me/", auth_views.MeView.as_view(), name="me"),
     path("posts/", PostListCreateView.as_view(), name="api-post-list"),
     path("posts/<slug:slug>/", PostDetailView.as_view(), name="api-post-detail"),
+    path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='api-comment-list-create'),
+    path('comments/<int:pk>/', CommentDeleteView.as_view(), name='api-comment-delete'),
 ]
