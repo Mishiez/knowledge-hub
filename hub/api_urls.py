@@ -1,6 +1,6 @@
 from django.urls import path
 from . import auth_views
-from .api_views import PostListView, PostDetailView, CommentListCreateView, CommentDeleteView
+from .api_views import PostListView, PostDetailView, CommentListCreateView, CommentDeleteView, PostLikeToggleView
 
 urlpatterns = [
     path("auth/register/", auth_views.RegisterView.as_view(), name="register"),
@@ -11,4 +11,5 @@ urlpatterns = [
     path("posts/<slug:slug>/", PostDetailView.as_view(), name="api-post-detail"),
     path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='api-comment-list-create'),
     path('comments/<int:pk>/', CommentDeleteView.as_view(), name='api-comment-delete'),
+    path('posts/<int:post_id>/like/', PostLikeToggleView.as_view(), name='api-post-like-toggle'),
 ]

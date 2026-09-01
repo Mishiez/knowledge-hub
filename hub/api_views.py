@@ -1,10 +1,12 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-from .models import Post, Comment
+from .models import Post, Comment,Like
 from .serializers import CommentSerializer, PostSerializer
 from .permissions import IsOwnerOrReadOnly
 
@@ -48,3 +50,15 @@ class CommentDeleteView(generics.DestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsOwnerOrReadOnly]
+
+
+class PostLikeToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if not created:
+            like.delete()
+            return Response({'liked': False, 'like_count': post.likes.count()})
+        return Response({'liked': True, 'like_count': post.likes.count()})

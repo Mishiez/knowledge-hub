@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Post, Comment
+from .models import Post, Comment, Like
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -26,11 +26,15 @@ from .models import Post, Comment
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'slug', 'content', 'author', 'created_at']
+        fields = ['id', 'title', 'slug', 'content', 'author', 'created_at', 'like_count']
         read_only_fields = ['author', 'created_at']
+
+    def get_like_count(self, obj):
+        return obj.likes.count()
 
     def validate_title(self, value):
         if not value.strip():
@@ -53,7 +57,6 @@ class PostSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError("A post with this slug already exists.")
         return value
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
@@ -78,3 +81,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'post', 'author', 'body', 'created_at']
         read_only_fields = ['post', 'author', 'created_at']
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['id', 'post', 'user', 'created_at']
+        read_only_fields = ['user', 'created_at']
