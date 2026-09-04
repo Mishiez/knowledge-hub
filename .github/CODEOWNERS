@@ -1,0 +1,11 @@
+# Default owner for everything in the repo
+*                       @Mishiez
+
+# Backend core app logic
+/hub/                   @Mishiez
+
+# Django settings and config
+/config/                @Mishiez
+
+# CI/CD and repo hygiene files
+/.github/               @Mishiez
