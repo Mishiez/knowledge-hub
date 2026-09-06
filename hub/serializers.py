@@ -20,9 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email"]
 
 
-from rest_framework import serializers
-from .models import Post, Comment
-
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
@@ -74,13 +71,13 @@ class CommentSerializer(serializers.ModelSerializer):
         return value.strip()
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
+# class CommentSerializer(serializers.ModelSerializer):
+#     author = serializers.StringRelatedField(read_only=True)
 
-    class Meta:
-        model = Comment
-        fields = ['id', 'post', 'author', 'body', 'created_at']
-        read_only_fields = ['post', 'author', 'created_at']
+#     class Meta:
+#         model = Comment
+#         fields = ['id', 'post', 'author', 'body', 'created_at']
+#         read_only_fields = ['post', 'author', 'created_at']
 
 
 class LikeSerializer(serializers.ModelSerializer):

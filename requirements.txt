@@ -5,4 +5,5 @@ django-filter==26.1
 djangorestframework==3.18.0
 psycopg2-binary==2.9.12
 python-dotenv==1.2.3
+ruff==0.16.6
 sqlparse==0.6.0
