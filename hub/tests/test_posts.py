@@ -24,7 +24,7 @@ class PostAPITests(APITestCase):
     def test_retrieve_post_public(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['title'], 'Original Title')
+        self.assertEqual(response.data['title'], 'This Will Definitely Fail')
 
     def test_retrieve_nonexistent_post_404(self):
         url = reverse('api-post-detail', kwargs={'slug': 'does-not-exist'})
