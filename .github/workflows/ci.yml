@@ -63,7 +63,33 @@ jobs:
       - name: Run tests
         run: python manage.py test
 
-  build:
+    build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set lowercase repo owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:latest
+            ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:${{ github.sha }}
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -85,5 +111,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/knowledge-hub-backend:latest
-            ghcr.io/${{ github.repository_owner }}/knowledge-hub-backend:${{ github.sha }}
+            ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:latest
+            ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:${{ github.sha }}
