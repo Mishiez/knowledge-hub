@@ -22,7 +22,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: staging-db
       DB_PORT: 5432
-      ALLOWED_HOSTS: wrong-host.example.com
+      ALLOWED_HOSTS:  ${STAGING_HOST}
     ports:
       - "8000:8000"
     depends_on:
