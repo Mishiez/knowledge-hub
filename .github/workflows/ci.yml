@@ -77,3 +77,43 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:latest
             ghcr.io/${{ env.OWNER_LC }}/knowledge-hub-backend:${{ github.sha }}
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to staging via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd ~/knowledge-hub-staging
+            echo "IMAGE_TAG=${{ github.sha }}" > .env
+            echo "DB_NAME=knowledgehub" >> .env
+            echo "DB_USER=khuser" >> .env
+            echo "DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}" >> .env
+            echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY_STAGING }}" >> .env
+            echo "STAGING_HOST=${{ secrets.STAGING_HOST }}" >> .env
+            docker compose -f docker-compose.staging.yml down
+            docker pull ghcr.io/mishiez/knowledge-hub-backend:${{ github.sha }}
+            docker compose -f docker-compose.staging.yml up -d
+
+  smoke-test:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Wait for staging to be ready
+        run: sleep 10
+
+      - name: Smoke test staging API
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}:8000/api/posts/)
+          if [ "$response" != "200" ]; then
+            echo "Smoke test failed: got HTTP $response"
+            exit 1
+          fi
+          echo "Smoke test passed: HTTP $response"
