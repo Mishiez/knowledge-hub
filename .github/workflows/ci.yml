@@ -83,6 +83,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Copy staging Compose configuration
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          source: docker-compose.staging.yml
+          target: ~/knowledge-hub-staging/
+
       - name: Deploy to staging via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -91,7 +100,6 @@ jobs:
           key: ${{ secrets.STAGING_SSH_KEY }}
           script: |
             cd ~/knowledge-hub-staging
-            git pull --ff-only
             echo "IMAGE_TAG=${{ github.sha }}" > .env
             echo "DB_NAME=knowledgehub" >> .env
             echo "DB_USER=khuser" >> .env
