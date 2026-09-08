@@ -23,6 +23,9 @@ class PostListView(generics.ListCreateAPIView):
     filterset_fields = ['author__username']
     search_fields = ['title']
 
+    def get_queryset(self):
+        raise Exception("intentional test failure — smoke test drill")
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
