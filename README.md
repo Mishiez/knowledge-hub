@@ -37,7 +37,7 @@ The whole stack (backend, frontend, PostgreSQL) can be brought up with one comma
    ```bash
    docker compose up --build
    ```
-   This starts PostgreSQL, runs migrations automatically, starts the Django backend on `http://localhost:8000`, and starts the frontend on `http://localhost:5173`.
+   This starts PostgreSQL, runs migrations automatically, and starts the Nginx entry point on `http://localhost:5173`. The frontend is served at `/` and the API is available at `/api/`; Django and PostgreSQL remain private to the Docker network.
 
 4. (Optional) Seed sample data inside the running container:
    ```bash
@@ -57,9 +57,13 @@ The whole stack (backend, frontend, PostgreSQL) can be brought up with one comma
 ### Container architecture
 
 - **`db`** — PostgreSQL 16, data persisted in a named volume so it survives container restarts (removed only via `down -v`)
-- **`backend`** — Django, waits for `db`'s healthcheck before running migrations and starting the server, binds `0.0.0.0:8000` so it's reachable from outside the container
-- **`frontend`** — multi-stage build: a Node stage runs `npm run build`, then only the resulting static files are copied into a minimal nginx image — no Node runtime or dev dependencies ship in the final image
+- **`backend`** — Django, waits for `db`'s healthcheck before running migrations and starting on Docker's private network
+- **`frontend`** — multi-stage build: a Node stage runs `npm run build`, then only the resulting static files are copied into an Nginx image. Nginx serves the SPA and proxies `/api/` requests to `backend:8000`.
 - All secrets and credentials are read from the gitignored `.env` file via Compose variable substitution — never hardcoded in a Dockerfile or `docker-compose.yml`
+
+### Staging server
+
+`docker-compose.staging.yml` exposes only Nginx on port 80. The public URLs are `http://<server>/` for the frontend and `http://<server>/api/` for the API. Django listens only on the internal Compose network, and Nginx forwards `/api/` to it. Ensure the server firewall permits inbound TCP port 80.
 
 ## Running locally without Docker
 
