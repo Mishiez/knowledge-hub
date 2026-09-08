@@ -124,7 +124,7 @@ jobs:
 
       - name: Smoke test staging API
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}:8000/api/posts/)
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}/api/posts/)
           if [ "$response" != "200" ]; then
             echo "Smoke test failed: got HTTP $response"
             exit 1
@@ -133,7 +133,7 @@ jobs:
 
       - name: Smoke test staging frontend
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}:5173/)
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}/)
           if [ "$response" != "200" ]; then
             echo "Frontend smoke test failed: got HTTP $response"
             exit 1
