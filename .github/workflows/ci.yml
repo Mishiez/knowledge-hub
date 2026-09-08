@@ -99,6 +99,7 @@ jobs:
             echo "STAGING_HOST=${{ secrets.STAGING_HOST }}" >> .env
             docker compose -f docker-compose.staging.yml down
             docker pull ghcr.io/mishiez/knowledge-hub-backend:${{ github.sha }}
+            docker pull ghcr.io/mishiez/knowledge-hub-frontend:latest
             docker compose -f docker-compose.staging.yml up -d
 
   smoke-test:
@@ -117,3 +118,12 @@ jobs:
             exit 1
           fi
           echo "Smoke test passed: HTTP $response"
+
+      - name: Smoke test staging frontend
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}:5173/)
+          if [ "$response" != "200" ]; then
+            echo "Frontend smoke test failed: got HTTP $response"
+            exit 1
+          fi
+          echo "Frontend smoke test passed: HTTP $response"
