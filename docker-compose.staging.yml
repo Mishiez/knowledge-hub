@@ -23,7 +23,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: staging-db
       DB_PORT: 5432
-      ALLOWED_HOSTS: ${STAGING_HOST}
+      ALLOWED_HOSTS: ${STAGING_HOST},mish-knowledge-hub.duckdns.org
     expose:
       - "8000"
     depends_on:
