@@ -65,6 +65,30 @@ The whole stack (backend, frontend, PostgreSQL) can be brought up with one comma
 
 `docker-compose.staging.yml` exposes only Nginx on port 80. The public URLs are `http://<server>/` for the frontend and `http://<server>/api/` for the API. Django listens only on the internal Compose network, and Nginx forwards `/api/` to it. Ensure the server firewall permits inbound TCP port 80.
 
+### Staging PostgreSQL backups
+
+The staging backup script creates compressed PostgreSQL custom-format dumps outside the database container, writes a SHA-256 checksum beside each dump, and removes dumps older than 14 days by default. On the server, copy the script into the staging directory and make it executable:
+
+```bash
+mkdir -p ~/knowledge-hub-staging/ops
+chmod +x ~/knowledge-hub-staging/ops/backup-staging-db.sh
+```
+
+Run a backup manually:
+
+```bash
+~/knowledge-hub-staging/ops/backup-staging-db.sh
+sha256sum -c ~/knowledge-hub-staging/backups/*.dump.sha256
+```
+
+Schedule it daily at 02:30 UTC with the server's crontab:
+
+```cron
+30 2 * * * /home/<server-user>/knowledge-hub-staging/ops/backup-staging-db.sh >> /home/<server-user>/knowledge-hub-staging/backup.log 2>&1
+```
+
+The retention period can be changed for a run with `RETENTION_DAYS=30`. Keep the backup directory outside the PostgreSQL container so container replacement does not remove the dumps.
+
 ## Running locally without Docker
 
 1. Clone the repo and enter the project folder:

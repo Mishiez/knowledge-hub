@@ -91,7 +91,7 @@ jobs:
           host: ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
-          source: docker-compose.staging.yml
+          source: docker-compose.staging.yml,ops/backup-staging-db.sh
           target: ~/knowledge-hub-staging/
 
       - name: Deploy to staging via SSH
@@ -108,6 +108,7 @@ jobs:
             echo "DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}" >> .env
             echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY_STAGING }}" >> .env
             echo "STAGING_HOST=${{ secrets.STAGING_HOST }}" >> .env
+            chmod +x ops/backup-staging-db.sh
             docker pull ghcr.io/mishiez/knowledge-hub-backend:${{ github.sha }}
             docker pull ghcr.io/mishiez/knowledge-hub-frontend:latest
             docker compose -f docker-compose.staging.yml up -d staging-db
