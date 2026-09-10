@@ -38,7 +38,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/letsencrypt/live/mish-knowledge-hub.duckdns.org:/etc/nginx/certs:ro
+      - /var/www/certbot:/var/www/certbot
     depends_on:
       - backend
 
