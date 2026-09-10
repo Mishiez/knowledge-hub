@@ -111,7 +111,9 @@ jobs:
             docker compose -f docker-compose.staging.yml down --remove-orphans
             docker pull ghcr.io/mishiez/knowledge-hub-backend:${{ github.sha }}
             docker pull ghcr.io/mishiez/knowledge-hub-frontend:latest
-            docker compose -f docker-compose.staging.yml up -d
+            docker compose -f docker-compose.staging.yml up -d staging-db
+            docker compose -f docker-compose.staging.yml run --rm backend python manage.py migrate
+            docker compose -f docker-compose.staging.yml up -d backend frontend
 
   smoke-test:
     needs: deploy-staging
