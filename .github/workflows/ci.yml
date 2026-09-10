@@ -108,12 +108,23 @@ jobs:
             echo "DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}" >> .env
             echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY_STAGING }}" >> .env
             echo "STAGING_HOST=${{ secrets.STAGING_HOST }}" >> .env
-            docker compose -f docker-compose.staging.yml down --remove-orphans
             docker pull ghcr.io/mishiez/knowledge-hub-backend:${{ github.sha }}
-            docker pull ghcr.io/mishiez/knowledge-hub-frontend:latest
             docker compose -f docker-compose.staging.yml up -d staging-db
-            docker compose -f docker-compose.staging.yml run --rm backend python manage.py migrate
-            docker compose -f docker-compose.staging.yml up -d backend frontend
+            docker compose -f docker-compose.staging.yml run --rm backend-migrate python manage.py migrate
+            docker compose -f docker-compose.staging.yml up -d backend-blue
+            for attempt in $(seq 1 30); do
+              status=$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose -f docker-compose.staging.yml ps -q backend-blue)")
+              if [ "$status" = "healthy" ]; then break; fi
+              if [ "$attempt" = "30" ]; then echo "backend-blue did not become healthy"; exit 1; fi
+              sleep 2
+            done
+            docker compose -f docker-compose.staging.yml up -d backend-green
+            for attempt in $(seq 1 30); do
+              status=$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose -f docker-compose.staging.yml ps -q backend-green)")
+              if [ "$status" = "healthy" ]; then break; fi
+              if [ "$attempt" = "30" ]; then echo "backend-green did not become healthy"; exit 1; fi
+              sleep 2
+            done
 
   smoke-test:
     needs: deploy-staging
