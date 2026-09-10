@@ -1,3 +1,9 @@
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   staging-db:
     image: postgres:16
@@ -12,8 +18,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    logging: *default-logging
 
-  backend:
+  backend-blue:
     image: ghcr.io/mishiez/knowledge-hub-backend:${IMAGE_TAG}
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.prod
@@ -30,6 +37,54 @@ services:
       staging-db:
         condition: service_healthy
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/api/posts/', headers={'Host': '${STAGING_HOST}'}), timeout=5)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging: *default-logging
+
+  backend-green:
+    image: ghcr.io/mishiez/knowledge-hub-backend:${IMAGE_TAG}
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      SECRET_KEY: ${SECRET_KEY}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: staging-db
+      DB_PORT: 5432
+      ALLOWED_HOSTS: ${STAGING_HOST},mish-knowledge-hub.duckdns.org
+    expose:
+      - "8000"
+    depends_on:
+      staging-db:
+        condition: service_healthy
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/api/posts/', headers={'Host': '${STAGING_HOST}'}), timeout=5)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging: *default-logging
+
+  backend-migrate:
+    image: ghcr.io/mishiez/knowledge-hub-backend:${IMAGE_TAG}
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      SECRET_KEY: ${SECRET_KEY}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: staging-db
+      DB_PORT: 5432
+      ALLOWED_HOSTS: ${STAGING_HOST},mish-knowledge-hub.duckdns.org
+    depends_on:
+      staging-db:
+        condition: service_healthy
+    logging: *default-logging
 
   frontend:
     image: ghcr.io/mishiez/knowledge-hub-frontend:latest
@@ -40,7 +95,11 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot
     depends_on:
-      - backend
+      backend-blue:
+        condition: service_healthy
+      backend-green:
+        condition: service_healthy
+    logging: *default-logging
 
 volumes:
   staging_postgres_data:
